@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import pathlib
+import shlex
 import subprocess
 import tarfile
 import tempfile
@@ -27,7 +28,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = pathlib.Path(__file__).resolve().parents[1]
-    release = f"release-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%SZ}"
+    release = f"release-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%S%fZ}"
     ssh_opts = (
         "-o", "BatchMode=yes",
         "-o", "StrictHostKeyChecking=no",
@@ -45,16 +46,23 @@ def main() -> None:
                     continue
                 tar.add(path, arcname=relative)
 
-        run("scp", "-i", args.identity_file, *ssh_opts, str(archive), f"{target}:/tmp/exam-mate.tar.gz")
+        remote_archive = f"/tmp/exam-mate-{release}.tar.gz"
+        run("scp", "-i", args.identity_file, *ssh_opts, str(archive), f"{target}:{remote_archive}")
 
     remote_release = f"{args.remote_dir}/releases/{release}"
+    deploy_command = (
+        f"test -f {shlex.quote(f'{args.remote_dir}/.env')}; "
+        f"mkdir -p {shlex.quote(f'{args.remote_dir}/releases')} {shlex.quote(remote_release)}; "
+        f"tar -xzf {shlex.quote(remote_archive)} -C {shlex.quote(remote_release)}; "
+        f"rm -f {shlex.quote(remote_archive)}; "
+        f"cp {shlex.quote(f'{args.remote_dir}/.env')} {shlex.quote(f'{remote_release}/.env')}; "
+        f"cd {shlex.quote(remote_release)}; "
+        "docker compose --project-name exam-mate up -d --build --remove-orphans"
+    )
     remote = (
         "set -eu; "
-        f"test -f {args.remote_dir}/.env; "
-        f"mkdir -p {args.remote_dir}/releases {remote_release}; "
-        f"tar -xzf /tmp/exam-mate.tar.gz -C {remote_release}; "
-        f"cp {args.remote_dir}/.env {remote_release}/.env; "
-        f"cd {remote_release}; docker compose up -d --build --remove-orphans"
+        f"flock -w 600 {shlex.quote(f'{args.remote_dir}/.deploy.lock')} "
+        f"sh -ceu {shlex.quote(deploy_command)}"
     )
     run(*ssh, remote)
     print(f"Deployed {release}")
