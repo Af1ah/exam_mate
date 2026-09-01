@@ -1,0 +1,89 @@
+// use prisma-next
+
+model Question {
+  id               Int      @id @default(autoincrement())
+  questionId       String   @unique
+  exam             String
+  examDate         String
+  shift            String
+  sourcePaper      String
+  questionNumber   Int
+  subject          String
+  topic            String
+  content          String
+  rightAnswer      String
+  optionA          String
+  optionB          String
+  optionC          String
+  shortExplanation String
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  attemptQuestions AttemptQuestion[]
+
+  @@index([exam, shift, questionNumber])
+  @@index([subject, topic])
+}
+
+model User {
+  id             String @id
+  phone          String @unique
+  name           String?
+  dateOfBirth    String?
+  examGoal       String?
+  onboardingStep Int    @default(0)
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  magicLinks MagicLink[]
+  attempts   QuizAttempt[]
+}
+
+model MagicLink {
+  id        String @id
+  secretHash String
+  userId    String
+  expiresAt TimestamptzString
+  usedAt    TimestamptzString?
+  createdAt TimestamptzString @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model QuizAttempt {
+  id          String @id
+  userId      String
+  status      String
+  startedAt   TimestamptzString
+  expiresAt   TimestamptzString
+  submittedAt TimestamptzString?
+  score       Int?
+  total       Int
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  user      User              @relation(fields: [userId], references: [id])
+  questions AttemptQuestion[]
+
+  @@index([userId, status])
+  @@index([expiresAt, status])
+}
+
+model AttemptQuestion {
+  id             String @id
+  attemptId      String
+  questionId     Int
+  position       Int
+  selectedAnswer String?
+  isCorrect      Boolean?
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  attempt  QuizAttempt @relation(fields: [attemptId], references: [id])
+  question Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([attemptId, questionId])
+  @@unique([attemptId, position])
+}

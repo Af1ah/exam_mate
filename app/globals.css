@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +20,20 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #f6f7fb;
+  color: #172033;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button, input { font: inherit; }
+button { cursor: pointer; border: 0; border-radius: 10px; background: #3256d6; color: #fff; padding: .8rem 1rem; font-weight: 700; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+input { width: 100%; box-sizing: border-box; border: 1px solid #d9dfeb; border-radius: 10px; padding: .8rem; }
+.center { min-height: 100vh; display: grid; place-content: center; padding: 1.5rem; text-align: center; }
+.card { width: min(100%, 42rem); box-sizing: border-box; padding: 2rem; background: #fff; border-radius: 20px; box-shadow: 0 12px 36px #17203318; }
+.card h1 { margin: .35rem 0 1rem; font-size: clamp(2rem, 8vw, 3rem); }.eyebrow { color: #3256d6; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; font-size: .75rem; }
+form { display: grid; gap: .85rem; text-align: left; margin-top: 1.5rem; }.error { color: #b42318; }
+.quiz { width: min(100% - 2rem, 48rem); margin: 2rem auto; }.quiz header, .quiz footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 1rem 0; }
+.progress { height: 8px; overflow: hidden; border-radius: 999px; background: #e5e9f3; }.progress i { display: block; height: 100%; background: #3256d6; transition: width .2s; }
+.quiz .card { width: 100%; text-align: left; }.quiz .card > p { font-size: 1.15rem; line-height: 1.6; }.options { display: grid; gap: .75rem; }.options button { text-align: left; background: #f4f6fb; color: #172033; border: 1px solid #d9dfeb; }.options .selected { color: #fff; background: #3256d6; border-color: #3256d6; }
