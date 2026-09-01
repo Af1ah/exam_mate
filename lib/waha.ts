@@ -15,7 +15,7 @@ const replyDelay = (text: string) => {
 
 const pause = (duration: number) => new Promise<void>((resolve) => setTimeout(resolve, duration));
 
-const postReplyPresenceDelay = () => Number(process.env.WAHA_REPLY_POST_SEND_PRESENCE_MS ?? 10_000);
+const postReplyPresenceDelay = () => Number(process.env.WAHA_REPLY_POST_SEND_PRESENCE_MS ?? 120_000);
 
 async function requestWaha(path: string, body: Record<string, unknown>) {
   const { baseUrl, apiKey } = config();
