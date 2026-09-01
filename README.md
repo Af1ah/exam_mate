@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Exam Mate
+
+Deployment and environment reference: [`docs/deployment.md`](docs/deployment.md).
 
 ## Getting Started
 

@@ -1,0 +1,12 @@
+.next
+.agents
+.claude
+.cursor
+.devin
+build
+out
+node_modules
+bun.lock
+prisma/schema.d.ts
+prisma/schema.json
+migrations

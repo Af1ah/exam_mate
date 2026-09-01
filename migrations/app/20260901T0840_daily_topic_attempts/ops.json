@@ -1,0 +1,167 @@
+[
+  {
+    "id": "column.public.quizAttempt.quizDay",
+    "label": "Add column \"quizDay\" to \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "quizDay",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"quizDay\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quizAttempt",
+          "quizDay"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"quizDay\"",
+        "sql": "ALTER TABLE \"public\".\"quizAttempt\" ADD COLUMN \"quizDay\" text DEFAULT '' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"quizDay\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quizAttempt",
+          "quizDay"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.quizAttempt.topic",
+    "label": "Add column \"topic\" to \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "topic",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"topic\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quizAttempt",
+          "topic"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"topic\"",
+        "sql": "ALTER TABLE \"public\".\"quizAttempt\" ADD COLUMN \"topic\" text DEFAULT '' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"topic\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "quizAttempt",
+          "topic"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.quizAttempt.quizAttempt_userId_quizDay_key",
+    "label": "Add unique constraint on \"quizAttempt\" (userId, quizDay)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "quizAttempt_userId_quizDay_key",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"quizAttempt_userId_quizDay_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quizAttempt_userId_quizDay_key",
+          "public",
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"quizAttempt_userId_quizDay_key\"",
+        "sql": "ALTER TABLE \"public\".\"quizAttempt\" ADD CONSTRAINT \"quizAttempt_userId_quizDay_key\" UNIQUE (\"userId\", \"quizDay\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"quizAttempt_userId_quizDay_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quizAttempt_userId_quizDay_key",
+          "public",
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quizAttempt.quizAttempt_quizDay_topic_idx_16b7bf05",
+    "label": "Create index \"quizAttempt_quizDay_topic_idx_16b7bf05\" on \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quizAttempt_quizDay_topic_idx_16b7bf05",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quizAttempt_quizDay_topic_idx_16b7bf05\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_quizDay_topic_idx_16b7bf05\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quizAttempt_quizDay_topic_idx_16b7bf05\"",
+        "sql": "CREATE INDEX \"quizAttempt_quizDay_topic_idx_16b7bf05\" ON \"public\".\"quizAttempt\" (\"quizDay\", \"topic\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quizAttempt_quizDay_topic_idx_16b7bf05\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_quizDay_topic_idx_16b7bf05\""
+        ]
+      }
+    ]
+  }
+]

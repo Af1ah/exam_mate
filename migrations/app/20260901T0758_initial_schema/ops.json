@@ -1,0 +1,901 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.attemptQuestion",
+    "label": "Create table \"attemptQuestion\"",
+    "summary": "Creates table \"attemptQuestion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"attemptQuestion\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"attemptQuestion\"",
+        "sql": "CREATE TABLE \"public\".\"attemptQuestion\" (\n  \"attemptId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"isCorrect\" bool,\n  \"position\" int4 NOT NULL,\n  \"questionId\" int4 NOT NULL,\n  \"selectedAnswer\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"attemptQuestion\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.magicLink",
+    "label": "Create table \"magicLink\"",
+    "summary": "Creates table \"magicLink\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "magicLink"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"magicLink\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"magicLink\"",
+        "sql": "CREATE TABLE \"public\".\"magicLink\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"secretHash\" text NOT NULL,\n  \"usedAt\" timestamptz,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"magicLink\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.question",
+    "label": "Create table \"question\"",
+    "summary": "Creates table \"question\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "question"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"question\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"question\"",
+        "sql": "CREATE TABLE \"public\".\"question\" (\n  \"content\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"exam\" text NOT NULL,\n  \"examDate\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"optionA\" text NOT NULL,\n  \"optionB\" text NOT NULL,\n  \"optionC\" text NOT NULL,\n  \"questionId\" text NOT NULL,\n  \"questionNumber\" int4 NOT NULL,\n  \"rightAnswer\" text NOT NULL,\n  \"shift\" text NOT NULL,\n  \"shortExplanation\" text NOT NULL,\n  \"sourcePaper\" text NOT NULL,\n  \"subject\" text NOT NULL,\n  \"topic\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"question\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.quizAttempt",
+    "label": "Create table \"quizAttempt\"",
+    "summary": "Creates table \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"quizAttempt\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"quizAttempt\"",
+        "sql": "CREATE TABLE \"public\".\"quizAttempt\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"score\" int4,\n  \"startedAt\" timestamptz NOT NULL,\n  \"status\" text NOT NULL,\n  \"submittedAt\" timestamptz,\n  \"total\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"quizAttempt\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.user",
+    "label": "Create table \"user\"",
+    "summary": "Creates table \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user\"",
+        "sql": "CREATE TABLE \"public\".\"user\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dateOfBirth\" text,\n  \"examGoal\" text,\n  \"id\" text NOT NULL,\n  \"name\" text,\n  \"onboardingStep\" int4 DEFAULT 0 NOT NULL,\n  \"phone\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.attemptQuestion.attemptQuestion_attemptId_questionId_key",
+    "label": "Add unique constraint on \"attemptQuestion\" (attemptId, questionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "attemptQuestion_attemptId_questionId_key",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"attemptQuestion_attemptId_questionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_questionId_key",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"attemptQuestion_attemptId_questionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"attemptQuestion\" ADD CONSTRAINT \"attemptQuestion_attemptId_questionId_key\" UNIQUE (\"attemptId\", \"questionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"attemptQuestion_attemptId_questionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_questionId_key",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.attemptQuestion.attemptQuestion_attemptId_position_key",
+    "label": "Add unique constraint on \"attemptQuestion\" (attemptId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "attemptQuestion_attemptId_position_key",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"attemptQuestion_attemptId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_position_key",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"attemptQuestion_attemptId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"attemptQuestion\" ADD CONSTRAINT \"attemptQuestion_attemptId_position_key\" UNIQUE (\"attemptId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"attemptQuestion_attemptId_position_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_position_key",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.question.question_questionId_key",
+    "label": "Add unique constraint on \"question\" (questionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "question_questionId_key",
+        "table": "question"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"question_questionId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "question_questionId_key",
+          "public",
+          "\"public\".\"question\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"question_questionId_key\"",
+        "sql": "ALTER TABLE \"public\".\"question\" ADD CONSTRAINT \"question_questionId_key\" UNIQUE (\"questionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"question_questionId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "question_questionId_key",
+          "public",
+          "\"public\".\"question\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_phone_key",
+    "label": "Add unique constraint on \"user\" (phone)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_phone_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_phone_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_phone_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_phone_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_phone_key\" UNIQUE (\"phone\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_phone_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_phone_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attemptQuestion.attemptQuestion_attemptId_idx_94f50eb9",
+    "label": "Create index \"attemptQuestion_attemptId_idx_94f50eb9\" on \"attemptQuestion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attemptQuestion_attemptId_idx_94f50eb9",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attemptQuestion_attemptId_idx_94f50eb9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion_attemptId_idx_94f50eb9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attemptQuestion_attemptId_idx_94f50eb9\"",
+        "sql": "CREATE INDEX \"attemptQuestion_attemptId_idx_94f50eb9\" ON \"public\".\"attemptQuestion\" (\"attemptId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attemptQuestion_attemptId_idx_94f50eb9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion_attemptId_idx_94f50eb9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attemptQuestion.attemptQuestion_questionId_idx_fdb42076",
+    "label": "Create index \"attemptQuestion_questionId_idx_fdb42076\" on \"attemptQuestion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attemptQuestion_questionId_idx_fdb42076",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attemptQuestion_questionId_idx_fdb42076\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion_questionId_idx_fdb42076\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attemptQuestion_questionId_idx_fdb42076\"",
+        "sql": "CREATE INDEX \"attemptQuestion_questionId_idx_fdb42076\" ON \"public\".\"attemptQuestion\" (\"questionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attemptQuestion_questionId_idx_fdb42076\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attemptQuestion_questionId_idx_fdb42076\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.magicLink.magicLink_userId_expiresAt_idx_9721b56d",
+    "label": "Create index \"magicLink_userId_expiresAt_idx_9721b56d\" on \"magicLink\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "magicLink_userId_expiresAt_idx_9721b56d",
+        "table": "magicLink"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"magicLink_userId_expiresAt_idx_9721b56d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink_userId_expiresAt_idx_9721b56d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"magicLink_userId_expiresAt_idx_9721b56d\"",
+        "sql": "CREATE INDEX \"magicLink_userId_expiresAt_idx_9721b56d\" ON \"public\".\"magicLink\" (\"userId\", \"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"magicLink_userId_expiresAt_idx_9721b56d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink_userId_expiresAt_idx_9721b56d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.magicLink.magicLink_userId_idx_a489d58a",
+    "label": "Create index \"magicLink_userId_idx_a489d58a\" on \"magicLink\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "magicLink_userId_idx_a489d58a",
+        "table": "magicLink"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"magicLink_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"magicLink_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"magicLink_userId_idx_a489d58a\" ON \"public\".\"magicLink\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"magicLink_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"magicLink_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.question.question_exam_shift_questionNumber_idx_857324a4",
+    "label": "Create index \"question_exam_shift_questionNumber_idx_857324a4\" on \"question\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "question_exam_shift_questionNumber_idx_857324a4",
+        "table": "question"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"question_exam_shift_questionNumber_idx_857324a4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question_exam_shift_questionNumber_idx_857324a4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"question_exam_shift_questionNumber_idx_857324a4\"",
+        "sql": "CREATE INDEX \"question_exam_shift_questionNumber_idx_857324a4\" ON \"public\".\"question\" (\"exam\", \"shift\", \"questionNumber\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"question_exam_shift_questionNumber_idx_857324a4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question_exam_shift_questionNumber_idx_857324a4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.question.question_subject_topic_idx_83193dc9",
+    "label": "Create index \"question_subject_topic_idx_83193dc9\" on \"question\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "question_subject_topic_idx_83193dc9",
+        "table": "question"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"question_subject_topic_idx_83193dc9\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question_subject_topic_idx_83193dc9\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"question_subject_topic_idx_83193dc9\"",
+        "sql": "CREATE INDEX \"question_subject_topic_idx_83193dc9\" ON \"public\".\"question\" (\"subject\", \"topic\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"question_subject_topic_idx_83193dc9\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"question_subject_topic_idx_83193dc9\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quizAttempt.quizAttempt_expiresAt_status_idx_63867ed3",
+    "label": "Create index \"quizAttempt_expiresAt_status_idx_63867ed3\" on \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quizAttempt_expiresAt_status_idx_63867ed3",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quizAttempt_expiresAt_status_idx_63867ed3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_expiresAt_status_idx_63867ed3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quizAttempt_expiresAt_status_idx_63867ed3\"",
+        "sql": "CREATE INDEX \"quizAttempt_expiresAt_status_idx_63867ed3\" ON \"public\".\"quizAttempt\" (\"expiresAt\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quizAttempt_expiresAt_status_idx_63867ed3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_expiresAt_status_idx_63867ed3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quizAttempt.quizAttempt_userId_idx_a489d58a",
+    "label": "Create index \"quizAttempt_userId_idx_a489d58a\" on \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quizAttempt_userId_idx_a489d58a",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quizAttempt_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quizAttempt_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"quizAttempt_userId_idx_a489d58a\" ON \"public\".\"quizAttempt\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quizAttempt_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.quizAttempt.quizAttempt_userId_status_idx_e4a128ba",
+    "label": "Create index \"quizAttempt_userId_status_idx_e4a128ba\" on \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "quizAttempt_userId_status_idx_e4a128ba",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"quizAttempt_userId_status_idx_e4a128ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_userId_status_idx_e4a128ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"quizAttempt_userId_status_idx_e4a128ba\"",
+        "sql": "CREATE INDEX \"quizAttempt_userId_status_idx_e4a128ba\" ON \"public\".\"quizAttempt\" (\"userId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"quizAttempt_userId_status_idx_e4a128ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"quizAttempt_userId_status_idx_e4a128ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attemptQuestion.attemptQuestion_attemptId_fkey",
+    "label": "Add foreign key \"attemptQuestion_attemptId_fkey\" on \"attemptQuestion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attemptQuestion_attemptId_fkey",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attemptQuestion_attemptId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_fkey",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attemptQuestion_attemptId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attemptQuestion\"\nADD CONSTRAINT \"attemptQuestion_attemptId_fkey\"\nFOREIGN KEY (\"attemptId\")\nREFERENCES \"public\".\"quizAttempt\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attemptQuestion_attemptId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_attemptId_fkey",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attemptQuestion.attemptQuestion_questionId_fkey",
+    "label": "Add foreign key \"attemptQuestion_questionId_fkey\" on \"attemptQuestion\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attemptQuestion_questionId_fkey",
+        "table": "attemptQuestion"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attemptQuestion_questionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_questionId_fkey",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attemptQuestion_questionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attemptQuestion\"\nADD CONSTRAINT \"attemptQuestion_questionId_fkey\"\nFOREIGN KEY (\"questionId\")\nREFERENCES \"public\".\"question\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attemptQuestion_questionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attemptQuestion_questionId_fkey",
+          "public",
+          "\"public\".\"attemptQuestion\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.magicLink.magicLink_userId_fkey",
+    "label": "Add foreign key \"magicLink_userId_fkey\" on \"magicLink\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "magicLink_userId_fkey",
+        "table": "magicLink"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"magicLink_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "magicLink_userId_fkey",
+          "public",
+          "\"public\".\"magicLink\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"magicLink_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"magicLink\"\nADD CONSTRAINT \"magicLink_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"magicLink_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "magicLink_userId_fkey",
+          "public",
+          "\"public\".\"magicLink\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.quizAttempt.quizAttempt_userId_fkey",
+    "label": "Add foreign key \"quizAttempt_userId_fkey\" on \"quizAttempt\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "quizAttempt_userId_fkey",
+        "table": "quizAttempt"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"quizAttempt_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quizAttempt_userId_fkey",
+          "public",
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"quizAttempt_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"quizAttempt\"\nADD CONSTRAINT \"quizAttempt_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"quizAttempt_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "quizAttempt_userId_fkey",
+          "public",
+          "\"public\".\"quizAttempt\""
+        ]
+      }
+    ]
+  }
+]

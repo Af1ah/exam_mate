@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     ".cursor/**",
     ".devin/**",
     "prisma/schema.d.ts",
+    "migrations/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

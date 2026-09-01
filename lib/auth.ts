@@ -20,7 +20,7 @@ export const readQuizSession = (token: string | undefined) => {
   if (!token) return null;
   try {
     const payload = jwt.verify(token, jwtSecret());
-    return typeof payload === "object" && payload.sub ? String(payload.sub) : null;
+    return typeof payload === "object" && payload.sub && payload.purpose === "quiz" ? String(payload.sub) : null;
   } catch {
     return null;
   }

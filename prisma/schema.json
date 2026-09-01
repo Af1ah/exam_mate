@@ -458,6 +458,13 @@
                   "kind": "scalar"
                 }
               },
+              "quizDay": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "score": {
                 "nullable": true,
                 "type": {
@@ -483,6 +490,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "topic": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -551,6 +565,9 @@
                 "id": {
                   "column": "id"
                 },
+                "quizDay": {
+                  "column": "quizDay"
+                },
                 "score": {
                   "column": "score"
                 },
@@ -562,6 +579,9 @@
                 },
                 "submittedAt": {
                   "column": "submittedAt"
+                },
+                "topic": {
+                  "column": "topic"
                 },
                 "total": {
                   "column": "total"
@@ -1060,6 +1080,15 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "quizDay": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "score": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -1079,6 +1108,15 @@
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": true
+                },
+                "topic": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "total": {
                   "codecId": "pg/int4@1",
@@ -1126,6 +1164,15 @@
                 },
                 {
                   "columns": [
+                    "quizDay",
+                    "topic"
+                  ],
+                  "name": "quizAttempt_quizDay_topic_idx_16b7bf05",
+                  "prefix": "quizAttempt_quizDay_topic_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "userId"
                   ],
                   "name": "quizAttempt_userId_idx_a489d58a",
@@ -1147,7 +1194,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "quizDay"
+                  ]
+                }
+              ]
             },
             "user": {
               "columns": {
@@ -1221,7 +1275,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "f1ff1ce100abb6f8327184c6d596137388a31bc6eaf252779d47689fb2bb96f1"
+    "storageHash": "26a9ef1e951c2a7ac931c4f001eb1928d0b6fd1b4996825dc68e0a71af068795"
   },
   "execution": {
     "executionHash": "7e2df513f7d453647efe8bc47ba7ea5a855a35217f035f3c1db3f973920d7872",

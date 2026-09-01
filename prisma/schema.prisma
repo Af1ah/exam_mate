@@ -61,6 +61,8 @@ model QuizAttempt {
   submittedAt TimestamptzString?
   score       Int?
   total       Int
+  quizDay     String @default("")
+  topic       String @default("")
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
 
@@ -69,6 +71,8 @@ model QuizAttempt {
 
   @@index([userId, status])
   @@index([expiresAt, status])
+  @@index([quizDay, topic])
+  @@unique([userId, quizDay])
 }
 
 model AttemptQuestion {

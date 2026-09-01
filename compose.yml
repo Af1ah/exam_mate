@@ -1,0 +1,55 @@
+name: exam-mate
+
+services:
+  db:
+    image: postgres:18-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: exam_mate
+      POSTGRES_USER: exam_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - exam_mate_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exam_user -d exam_mate"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://exam_user:${POSTGRES_PASSWORD}@db:5432/exam_mate
+      NODE_ENV: production
+      PORT: 8096
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8096:8096"
+
+  seed:
+    image: postgres:18-bookworm
+    profiles: ["seed"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: exam_mate
+      PGUSER: exam_user
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      ALLOW_APPEND_SEED: ${ALLOW_APPEND_SEED:-false}
+    volumes:
+      - ${QUESTIONS_CSV_PATH:?Set QUESTIONS_CSV_PATH in .env}:/seed/questions.csv:ro
+      - ./docker/seed-questions.sh:/seed/seed-questions.sh:ro
+    entrypoint: ["/bin/sh", "/seed/seed-questions.sh"]
+
+volumes:
+  exam_mate_postgres:
