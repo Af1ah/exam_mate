@@ -28,8 +28,12 @@ def main() -> None:
 
     root = pathlib.Path(__file__).resolve().parents[1]
     release = f"release-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%SZ}"
-    target = f"{args.user}@{args.host}"
-    ssh = ("ssh", "-i", args.identity_file, "-o", "BatchMode=yes", target)
+    ssh_opts = (
+        "-o", "BatchMode=yes",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+    )
+    ssh = ("ssh", "-i", args.identity_file, *ssh_opts, target)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         archive = pathlib.Path(temp_dir) / "exam-mate.tar.gz"
@@ -40,7 +44,7 @@ def main() -> None:
                     continue
                 tar.add(path, arcname=relative)
 
-        run("scp", "-i", args.identity_file, "-o", "BatchMode=yes", str(archive), f"{target}:/tmp/exam-mate.tar.gz")
+        run("scp", "-i", args.identity_file, *ssh_opts, str(archive), f"{target}:/tmp/exam-mate.tar.gz")
 
     remote_release = f"{args.remote_dir}/releases/{release}"
     remote = (
