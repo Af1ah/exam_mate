@@ -87,7 +87,6 @@ export function QuizApp({
     return (
       <main className="center">
         <section className="card profile-card">
-          <p className="eyebrow">Exam Mate</p>
           <h1>Let’s personalize your quiz.</h1>
           <p>Your WhatsApp number is already securely linked.</p>
           <form onSubmit={saveProfile}>
@@ -140,7 +139,6 @@ export function QuizApp({
     return (
       <main className="center">
         <section className="card start-card">
-          <p className="eyebrow">Today’s quiz</p>
           <h1>Your daily topic is ready.</h1>
           {nextQuiz && (
             <p className="quiz-category">

@@ -33,6 +33,7 @@ def main() -> None:
         "-o", "StrictHostKeyChecking=no",
         "-o", "UserKnownHostsFile=/dev/null",
     )
+    target = f"{args.user}@{args.host}"
     ssh = ("ssh", "-i", args.identity_file, *ssh_opts, target)
 
     with tempfile.TemporaryDirectory() as temp_dir:

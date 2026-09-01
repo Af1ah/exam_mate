@@ -23,8 +23,6 @@ export default function Home() {
           <p className="encouragement">{getEncouragement("welcome")}</p>
         </div>
         <div className="daily-card" aria-label="Daily quiz details">
-          <div className="card-orbit orbit-one" />
-          <div className="card-orbit orbit-two" />
           <p className="daily-label">Today’s routine</p>
           <div className="daily-number">
             10<span>Q</span>

@@ -114,14 +114,6 @@ h2 {
   box-shadow: 0 0.8rem 1.6rem #118a7e42;
   transform: translateY(-1px);
 }
-.eyebrow {
-  margin: 0;
-  color: var(--primary);
-  font-size: 0.74rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
 .center {
   display: grid;
   min-height: 100dvh;
@@ -140,7 +132,7 @@ h2 {
 .card h1 {
   margin: 0.45rem 0 1rem;
   font-size: clamp(2rem, 6vw, 3rem);
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
 }
 .card h2 {
   margin: 0.4rem 0 1rem;
@@ -159,8 +151,8 @@ h2 {
   max-width: 32rem;
   text-align: left;
 }
-.profile-card > p:not(.eyebrow),
-.start-card > p:not(.eyebrow),
+.profile-card > p,
+.start-card > p,
 .expiry-card > p {
   color: var(--muted);
   line-height: 1.6;
@@ -346,7 +338,7 @@ input:focus-visible {
   color: #1c41ae;
   font-size: clamp(2.5rem, 9vw, 4rem);
   font-weight: 850;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -469,7 +461,7 @@ input:focus-visible {
   margin-top: auto;
   color: #fff;
   font-size: clamp(2rem, 6vw, 2.7rem);
-  letter-spacing: -0.06em;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 .dashboard-grid {
@@ -566,7 +558,7 @@ input:focus-visible {
   margin: 0.45rem 0 1.4rem;
   font-size: clamp(3.2rem, 7vw, 6.5rem);
   line-height: 0.98;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.04em;
 }
 .hero h1 em {
   color: var(--primary);
@@ -585,33 +577,12 @@ input:focus-visible {
   font-size: 0.86rem;
 }
 .daily-card {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   padding: clamp(2rem, 5vw, 3rem);
   border: 1px solid #ffffff8a;
-  border-radius: 2rem;
+  border-radius: 1rem;
   color: #fff;
-  background: linear-gradient(145deg, #1a2c71, #315be2);
+  background: #1a2c71;
   box-shadow: 0 1.75rem 4rem #315be255;
-}
-.card-orbit {
-  position: absolute;
-  z-index: -1;
-  border: 1px solid #fff4;
-  border-radius: 50%;
-}
-.orbit-one {
-  width: 24rem;
-  height: 24rem;
-  top: -13rem;
-  right: -12rem;
-}
-.orbit-two {
-  width: 18rem;
-  height: 18rem;
-  bottom: -12rem;
-  left: -10rem;
 }
 .daily-label {
   margin: 0;
@@ -626,7 +597,7 @@ input:focus-visible {
   font-size: clamp(5rem, 12vw, 8rem);
   font-weight: 900;
   line-height: 0.8;
-  letter-spacing: -0.09em;
+  letter-spacing: -0.04em;
 }
 .daily-number span {
   margin-left: 0.4rem;
@@ -655,10 +626,8 @@ input:focus-visible {
   gap: 1rem;
 }
 .steps article {
-  padding: 1.5rem;
-  border: 1px solid #dfe5f5;
-  border-radius: 1rem;
-  background: #ffffffad;
+  padding: 1.25rem 0 0;
+  border-top: 2px solid #aebfeb;
 }
 .steps span {
   color: var(--primary);
