@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   title: "Exam Mate",
   description: "A secure WhatsApp-first competitive exam quiz app.",
 };
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html className={examFont.variable} lang="en">
       <body>{children}</body>
