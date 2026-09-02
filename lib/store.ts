@@ -1,25 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { db } from "@/prisma/db";
 import { newId } from "@/lib/auth/crypto";
+import { parseDatabaseTimestamp } from "@/lib/datetime";
 
 const orm = db.orm.public as any;
 const now = () => new Date().toISOString();
 const INDIA_TIME_ZONE = "Asia/Kolkata";
 
 function toIsoDate(value: string | Date | null | undefined): string {
-  if (!value) return "";
-  if (value instanceof Date) return value.toISOString();
-  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
-  const d = new Date(normalized);
-  return isNaN(d.getTime()) ? "" : d.toISOString();
+  const timestamp = parseDatabaseTimestamp(value);
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : "";
 }
 
 function parseDate(value: string | Date | null | undefined): Date {
-  if (!value) return new Date(0);
-  if (value instanceof Date) return value;
-  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
-  const d = new Date(normalized);
-  return isNaN(d.getTime()) ? new Date(0) : d;
+  const timestamp = parseDatabaseTimestamp(value);
+  return Number.isFinite(timestamp) ? new Date(timestamp) : new Date(0);
 }
 
 function indiaQuizDay(date = new Date()) {

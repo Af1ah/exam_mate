@@ -4,6 +4,7 @@ import { createHmac, randomUUID } from "node:crypto";
 import { AUTH_POLICY } from "@/lib/auth/constants";
 import { getAuthSecret } from "@/lib/config/server";
 import { db } from "@/prisma/db";
+import { parseDatabaseTimestamp } from "@/lib/datetime";
 
 // Prisma Next's generated dynamic ORM namespace does not expose model keys statically yet.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,9 +41,9 @@ export async function consumeRateLimit(action: string, identifier: string) {
   }
 
   if (!record) throw new Error("Unable to enforce rate limit");
-  if (record.blockedUntil && Date.parse(record.blockedUntil) > now) throw new RateLimitExceededError(true);
+  if (record.blockedUntil && parseDatabaseTimestamp(record.blockedUntil) > now) throw new RateLimitExceededError(true);
 
-  const withinWindow = now - Date.parse(record.windowStartedAt) < AUTH_POLICY.rateLimit.windowMs;
+  const withinWindow = now - parseDatabaseTimestamp(record.windowStartedAt) < AUTH_POLICY.rateLimit.windowMs;
   const attempts = withinWindow ? record.attempts + 1 : 1;
   const blockedUntil =
     attempts > AUTH_POLICY.rateLimit.maxAttempts ? new Date(now + AUTH_POLICY.rateLimit.blockMs).toISOString() : null;

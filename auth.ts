@@ -9,14 +9,7 @@ import { DUMMY_PASSWORD_HASH } from "@/lib/auth/password";
 import { RateLimitExceededError, consumeRateLimit } from "@/lib/auth/rate-limit";
 import { requestIp } from "@/lib/auth/request";
 import { consumeMagicLink, findUserByEmail, getMagicLink, getUser } from "@/lib/data/auth";
-
-function parseExpiresAt(value?: string | Date | null): number {
-  if (!value) return 0;
-  if (value instanceof Date) return value.getTime();
-  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
-  const time = Date.parse(normalized);
-  return isNaN(time) ? 0 : time;
-}
+import { parseDatabaseTimestamp } from "@/lib/datetime";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -56,10 +49,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
         const [id, secret, ...extra] = token.split(".");
         const link = id && secret && !extra.length && token.length <= 256 ? await getMagicLink(id) : null;
+        const expiresAt = parseDatabaseTimestamp(link?.expiresAt);
         if (
           !link ||
           link.usedAt ||
-          parseExpiresAt(link.expiresAt) <= Date.now() ||
+          !Number.isFinite(expiresAt) ||
+          expiresAt <= Date.now() ||
           !(await verifySecret(secret, link.secretHash))
         )
           return null;

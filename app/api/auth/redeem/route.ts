@@ -7,16 +7,9 @@ import { RateLimitExceededError, consumeRateLimit } from "@/lib/auth/rate-limit"
 import { requestIp } from "@/lib/auth/request";
 import { getAuthSecret, getPublicOrigin } from "@/lib/config/server";
 import { consumeMagicLink, getMagicLink, getUser } from "@/lib/data/auth";
+import { parseDatabaseTimestamp } from "@/lib/datetime";
 
 export const runtime = "nodejs";
-
-function parseExpiresAt(value?: string | Date | null): number {
-  if (!value) return 0;
-  if (value instanceof Date) return value.getTime();
-  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
-  const time = Date.parse(normalized);
-  return isNaN(time) ? 0 : time;
-}
 
 function publicRedirect(path: string) {
   return NextResponse.redirect(new URL(path, getPublicOrigin()));
@@ -50,10 +43,12 @@ export async function POST(request: Request) {
   if (!id || !secret || extra.length > 0) return loginRedirect("invalid");
 
   const link = await getMagicLink(id);
+  const expiresAt = parseDatabaseTimestamp(link?.expiresAt);
   if (
     !link ||
     link.usedAt ||
-    parseExpiresAt(link.expiresAt) <= Date.now() ||
+    !Number.isFinite(expiresAt) ||
+    expiresAt <= Date.now() ||
     !(await verifySecret(secret, link.secretHash))
   ) {
     return loginRedirect("expired");

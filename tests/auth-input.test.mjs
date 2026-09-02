@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { normalizeEmail, normalizePhone, readDate, readPassword, readRequiredText } from "../lib/auth/input.ts";
 import { requireSameOrigin, requestIp } from "../lib/auth/request.ts";
+import { parseDatabaseTimestamp } from "../lib/datetime.ts";
 
 describe("authentication input", () => {
   test("normalizes valid email and phone values", () => {
@@ -60,5 +61,14 @@ describe("magic-link entry", () => {
     expect(page).toContain('method="POST"');
     expect(page).not.toContain("dangerouslySetInnerHTML");
     expect(page).not.toContain(".submit()");
+  });
+});
+
+describe("database timestamps", () => {
+  test("parses Postgres offsets without minutes", () => {
+    const timestamp = parseDatabaseTimestamp("2026-09-02 12:04:56.027+00");
+
+    expect(Number.isFinite(timestamp)).toBeTrue();
+    expect(new Date(timestamp).toISOString()).toBe("2026-09-02T12:04:56.027Z");
   });
 });
