@@ -10,6 +10,14 @@ import { RateLimitExceededError, consumeRateLimit } from "@/lib/auth/rate-limit"
 import { requestIp } from "@/lib/auth/request";
 import { consumeMagicLink, findUserByEmail, getMagicLink, getUser } from "@/lib/data/auth";
 
+function parseExpiresAt(value?: string | Date | null): number {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
+  const time = Date.parse(normalized);
+  return isNaN(time) ? 0 : time;
+}
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   session: { strategy: "jwt", maxAge: AUTH_POLICY.sessionMaxAgeSeconds },
@@ -51,7 +59,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         if (
           !link ||
           link.usedAt ||
-          Date.parse(link.expiresAt) <= Date.now() ||
+          parseExpiresAt(link.expiresAt) <= Date.now() ||
           !(await verifySecret(secret, link.secretHash))
         )
           return null;
@@ -63,11 +71,5 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    ...authConfig.callbacks,
-    jwt({ token, user }) {
-      if (user) token.sessionVersion = user.sessionVersion;
-      return token;
-    },
-  },
+  callbacks: authConfig.callbacks,
 });

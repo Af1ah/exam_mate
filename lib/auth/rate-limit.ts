@@ -10,7 +10,7 @@ import { db } from "@/prisma/db";
 const orm = db.orm.public as any;
 
 export class RateLimitExceededError extends Error {
-  constructor() {
+  constructor(public readonly alreadyBlocked = false) {
     super("Rate limit exceeded");
     this.name = "RateLimitExceededError";
   }
@@ -40,7 +40,7 @@ export async function consumeRateLimit(action: string, identifier: string) {
   }
 
   if (!record) throw new Error("Unable to enforce rate limit");
-  if (record.blockedUntil && Date.parse(record.blockedUntil) > now) throw new RateLimitExceededError();
+  if (record.blockedUntil && Date.parse(record.blockedUntil) > now) throw new RateLimitExceededError(true);
 
   const withinWindow = now - Date.parse(record.windowStartedAt) < AUTH_POLICY.rateLimit.windowMs;
   const attempts = withinWindow ? record.attempts + 1 : 1;
@@ -54,5 +54,5 @@ export async function consumeRateLimit(action: string, identifier: string) {
     updatedAt: new Date(now).toISOString(),
   });
 
-  if (blockedUntil) throw new RateLimitExceededError();
+  if (blockedUntil) throw new RateLimitExceededError(false);
 }

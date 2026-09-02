@@ -1,8 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
-import { redirect } from "next/navigation";
-import { auth, signIn } from "@/auth";
+import { signIn } from "@/auth";
 import { normalizeEmail, readPassword } from "@/lib/auth/input";
 
 export type LoginState = { error?: string } | undefined;
@@ -26,19 +25,4 @@ export async function loginWithPassword(_: LoginState, formData: FormData): Prom
     }
     throw error;
   }
-}
-
-export async function redeemMagicLink(token: string): Promise<{ error?: string }> {
-  if ((await auth())?.user?.id) redirect("/quiz");
-  if (!token || token.length > 256) return { error: "This link is not valid. Request a new link to continue." };
-  try {
-    await signIn("magic-link", { token, redirectTo: "/quiz" });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      if (error.type !== "CredentialsSignin") console.error("Magic-link sign-in failed", error);
-      return { error: "This link has expired or has already been used. Request a new link to continue." };
-    }
-    throw error;
-  }
-  return {};
 }

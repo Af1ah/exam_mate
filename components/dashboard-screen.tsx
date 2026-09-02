@@ -1,19 +1,41 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo } from "react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { getEncouragement } from "@/lib/encouragement";
+
+const ScoreChart = dynamic(
+  () => import("@/components/score-chart").then((mod) => mod.ScoreChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="score-chart" style={{ display: "grid", placeItems: "center", color: "#64718a" }}>
+        Loading score chart…
+      </div>
+    ),
+  },
+);
 
 export type DashboardData = {
   attemptedToday: boolean;
+  completedToday?: boolean;
+  hasActiveAttempt?: boolean;
   canStartAnother: boolean;
   nextQuiz: { subject: string; topic: string } | null;
   summary: { attempts: number; averageScore: number; bestScore: number };
   activity: { id: string; day: string; score: number; total: number; topic: string }[];
 };
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
 export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
+  const isCompleted = Boolean(dashboard.completedToday);
+  const isActive = Boolean(dashboard.hasActiveAttempt);
+
   const calendar = useMemo(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -24,21 +46,37 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
       firstDay: new Date(year, month, 1).getDay(),
       daysInMonth: new Date(year, month + 1, 0).getDate(),
       completed: new Map(dashboard.activity.map((attempt) => [attempt.day, attempt.id])),
-      label: today.toLocaleString("en-IN", { month: "long", year: "numeric" }),
+      label: `${MONTH_NAMES[month]} ${year}`,
     };
   }, [dashboard.activity]);
+
   const chartData = useMemo(
     () =>
-      dashboard.activity.slice(-7).map((attempt) => ({
-        label: new Date(`${attempt.day}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
-        score: attempt.total ? Math.round((attempt.score / attempt.total) * 100) : 0,
-      })),
+      dashboard.activity.slice(-7).map((attempt, i) => {
+        const rawDate = attempt.day.includes(" ") ? attempt.day.replace(" ", "T") : attempt.day;
+        const dateObj = new Date(rawDate.includes("T") ? rawDate : `${rawDate}T00:00:00`);
+        const displayDate = isNaN(dateObj.getTime())
+          ? attempt.day
+          : dateObj.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+        return {
+          id: attempt.id || `attempt-${i}`,
+          displayDate,
+          score: attempt.total ? Math.round((attempt.score / attempt.total) * 100) : 0,
+        };
+      }),
     [dashboard.activity],
   );
+
   return (
     <main className="dashboard">
       <section className="dashboard-hero">
-        <h1>Today’s set is complete.</h1>
+        <h1>
+          {isActive
+            ? "Your quiz is in progress."
+            : isCompleted
+              ? "Today’s set is complete."
+              : "Today’s quiz is ready."}
+        </h1>
       </section>
       <section className="dashboard-stats" aria-label="Quiz summary">
         <article>
@@ -57,48 +95,39 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
           <small>your strongest result</small>
         </article>
       </section>
-      <section className="dashboard-banner" aria-label="Study reminder">
-        <p className="dashboard-message">
-          {getEncouragement(`${dashboard.summary.attempts}-${dashboard.activity.at(-1)?.day ?? "start"}`)}
-        </p>
-        <p>Review your progress now, then return tomorrow for a new topic.</p>
-        {dashboard.canStartAnother && (
-          <Link className="button button-secondary" href="/quiz?newAttempt=1">
-            Start another test attempt
+
+      {!isCompleted && (
+        <section className="dashboard-banner" aria-label="Quiz action">
+          <div className="dashboard-banner-content">
+            <div className="dashboard-banner-header">
+              <span className={isActive ? "dashboard-badge pulse" : "dashboard-badge"}>
+                {isActive ? "In Progress" : "Ready Today"}
+              </span>
+              <p className="dashboard-banner-title">
+                {isActive
+                  ? "Active timed quiz"
+                  : dashboard.nextQuiz
+                    ? `${dashboard.nextQuiz.subject} · ${dashboard.nextQuiz.topic}`
+                    : "Daily 10-question set"}
+              </p>
+            </div>
+            <p className="dashboard-banner-subtitle">
+              {isActive
+                ? "Your session is running. Finish your questions before the timer expires."
+                : "10 focused questions to keep your knowledge sharp and streak active."}
+            </p>
+          </div>
+          <Link className="button" href="/quiz">
+            {isActive ? "Resume →" : "Start Quiz →"}
           </Link>
-        )}
-      </section>
+        </section>
+      )}
+
       <section className="dashboard-grid">
         <article className="card chart-card">
           <h2>Recent quiz scores</h2>
-          {chartData.length ? (
-            <div className="score-chart" aria-label="Recent score trend">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 12, right: 10, left: -22, bottom: 0 }}>
-                  <CartesianGrid stroke="#e6eaf3" strokeDasharray="4 4" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fill: "#72809a", fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fill: "#72809a", fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <Tooltip
-                    cursor={{ stroke: "#cbd5ea", strokeWidth: 1 }}
-                    formatter={(value) => [`${value}%`, "Score"]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="score"
-                    stroke="#315be2"
-                    strokeWidth={3}
-                    dot={{ fill: "#fff", stroke: "#315be2", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+          {chartData.length > 0 ? (
+            <ScoreChart data={chartData} />
           ) : (
             <p className="empty-chart">Your score trend will appear after your first completed quiz.</p>
           )}
@@ -120,7 +149,7 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
               const attemptId = calendar.completed.get(key);
               return attemptId ? (
                 <Link
-                  aria-label={`Review quiz completed on ${new Date(`${key}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "long" })}`}
+                  aria-label={`Review quiz completed on ${day} ${MONTH_NAMES[calendar.month]} ${calendar.year}`}
                   className="attended"
                   href={`/result/${attemptId}`}
                   key={key}
@@ -137,6 +166,35 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
           </p>
         </article>
       </section>
+
+      {isCompleted && (
+        <section className="dashboard-completion-card" aria-label="Daily completion note">
+          <div className="completion-content">
+            <div className="completion-icon-wrapper">
+              <div className="completion-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div className="completion-text">
+              <p className="completion-title">
+                {getEncouragement(`${dashboard.summary.attempts}-${dashboard.activity.at(-1)?.day ?? "start"}`)}
+              </p>
+              <p className="completion-subtitle">
+                Great job! You’ve completed today’s quiz. Come back tomorrow for a fresh topic!
+              </p>
+            </div>
+          </div>
+          {dashboard.canStartAnother && (
+            <div className="completion-action">
+              <Link className="button" href="/quiz?newAttempt=1">
+                Practice Again
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

@@ -29,6 +29,15 @@ describe("request boundaries", () => {
     });
     expect(() => requireSameOrigin(accepted)).not.toThrow();
 
+    const acceptedForwarded = new Request("http://localhost:3000/api/quiz/start", {
+      headers: {
+        origin: "https://exammate.aflahdev.in",
+        "x-forwarded-host": "exammate.aflahdev.in",
+        "x-forwarded-proto": "https",
+      },
+    });
+    expect(() => requireSameOrigin(acceptedForwarded)).not.toThrow();
+
     const rejected = new Request("https://exam-mate.example.com/api/profile", {
       headers: { origin: "https://attacker.example" },
     });

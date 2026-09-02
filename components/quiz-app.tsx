@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AUTH_POLICY } from "@/lib/auth/constants";
 type Quiz = {
@@ -8,81 +8,145 @@ type Quiz = {
   topic: string;
   subject: string;
   questions: { id: number; content: string; options: string[] }[];
+  initialAnswers?: Record<number, string>;
 };
+
+function parseIsoDate(value?: string | null): number {
+  if (!value) return 0;
+  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
+  const time = new Date(normalized).getTime();
+  return isNaN(time) ? 0 : time;
+}
+
+function getRemainingSeconds(expiresAtStr?: string) {
+  if (!expiresAtStr) return 600;
+  const targetTime = parseIsoDate(expiresAtStr);
+  if (!targetTime) return 0;
+  return Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
+}
+
 export function QuizApp({
   profileComplete,
   nextQuiz,
+  initialQuiz,
 }: {
   profileComplete: boolean;
   nextQuiz: { subject: string; topic: string } | null;
+  initialQuiz?: Quiz | null;
 }) {
   const router = useRouter();
   const [profile, setProfile] = useState({ name: "", dateOfBirth: "", examGoal: "", email: "", password: "" });
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(initialQuiz ?? null);
   const [position, setPosition] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [seconds, setSeconds] = useState(600);
+  const [answers, setAnswers] = useState<Record<number, string>>(initialQuiz?.initialAnswers ?? {});
+  const [seconds, setSeconds] = useState(() => getRemainingSeconds(initialQuiz?.expiresAt));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const begin = useCallback(async () => {
-    if (busy) return;
-    setBusy(true);
-    const response = await fetch("/api/quiz/start", { method: "POST" });
-    const body = await response.json();
-    if (!response.ok) {
-      setError(body.error);
-      setBusy(false);
-      if (String(body.error).includes("already used")) router.replace("/dashboard");
-      return;
-    }
-    setQuiz(body);
-    setBusy(false);
-  }, [busy, router]);
+  const hasAutoSubmittedRef = useRef(false);
+
   const submit = useCallback(async () => {
     if (!quiz || busy) return;
     setBusy(true);
-    const response = await fetch(`/api/quiz/${quiz.id}/submit`, { method: "POST" });
-    if (response.ok) router.replace(`/result/${quiz.id}`);
-    else {
-      setError("We could not submit your quiz. Please try again.");
+    setError("");
+    try {
+      const response = await fetch(`/api/quiz/${quiz.id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (response.ok) {
+        router.replace(`/result/${quiz.id}`);
+      } else {
+        const body = await response.json().catch(() => ({}));
+        setError(body.error || "We could not submit your quiz. Please try again.");
+        setBusy(false);
+      }
+    } catch (err) {
+      console.error("Failed to submit quiz:", err);
+      setError("Network error. Please check your connection and try again.");
       setBusy(false);
     }
   }, [busy, quiz, router]);
+
+  const begin = useCallback(async () => {
+    if (busy) return;
+    setError("");
+    setBusy(true);
+    try {
+      const response = await fetch("/api/quiz/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const body = await response.json().catch(() => ({ error: "Invalid server response" }));
+      if (!response.ok) {
+        setError(body.error || "Unable to start quiz. Please try again.");
+        setBusy(false);
+        if (String(body.error).includes("already used")) router.replace("/dashboard");
+        return;
+      }
+      setQuiz(body);
+      if (body.initialAnswers) {
+        setAnswers(body.initialAnswers);
+      }
+      setSeconds(getRemainingSeconds(body.expiresAt));
+      setBusy(false);
+    } catch (err) {
+      console.error("Failed to start quiz:", err);
+      setError("Network error. Please check your connection and try again.");
+      setBusy(false);
+    }
+  }, [busy, router]);
+
   useEffect(() => {
     if (!quiz) return;
+    hasAutoSubmittedRef.current = false;
     const id = setInterval(() => {
-      const left = Math.max(0, Math.ceil((new Date(quiz.expiresAt).getTime() - Date.now()) / 1000));
+      const left = getRemainingSeconds(quiz.expiresAt);
       setSeconds(left);
-      if (!left) void submit();
+      if (left <= 0 && !hasAutoSubmittedRef.current) {
+        hasAutoSubmittedRef.current = true;
+        void submit();
+      }
     }, 1_000);
     return () => clearInterval(id);
   }, [quiz, submit]);
   async function saveProfile(event: React.FormEvent) {
     event.preventDefault();
     if (busy) return;
+    setError("");
     setBusy(true);
-    const response = await fetch("/api/profile", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
-    });
-    if (!response.ok) {
-      setError((await response.json()).error);
+    try {
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        setError(body.error || "Unable to save your profile.");
+        setBusy(false);
+        return;
+      }
       setBusy(false);
-      return;
+      void begin();
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      setError("Network error. Please check your connection and try again.");
+      setBusy(false);
     }
-    setBusy(false);
-    void begin();
   }
   async function choose(questionId: number, selectedAnswer: string) {
     setAnswers((current) => ({ ...current, [questionId]: selectedAnswer }));
     if (!quiz) return;
-    const response = await fetch(`/api/quiz/${quiz.id}/answer`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId, selectedAnswer }),
-    });
-    if (!response.ok) setError("We could not save that answer. Please select it again.");
+    try {
+      const response = await fetch(`/api/quiz/${quiz.id}/answer`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId, selectedAnswer }),
+      });
+      if (!response.ok) setError("We could not save that answer. Please select it again.");
+    } catch (err) {
+      console.error("Failed to save answer:", err);
+    }
   }
   if (!profileComplete && !quiz)
     return (

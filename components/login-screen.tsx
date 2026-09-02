@@ -4,10 +4,23 @@ import { useActionState, useId } from "react";
 import { loginWithPassword } from "@/app/actions/auth";
 import { PUBLIC_CONFIG } from "@/lib/config/public";
 
-export function LoginScreen({ sessionExpired = false }: { sessionExpired?: boolean }) {
+export function LoginScreen({
+  magicLinkExpired = false,
+  magicLinkInvalid = false,
+  sessionExpired = false,
+}: {
+  magicLinkExpired?: boolean;
+  magicLinkInvalid?: boolean;
+  sessionExpired?: boolean;
+}) {
   const [state, action, pending] = useActionState(loginWithPassword, undefined);
   const emailHintId = useId();
   const errorId = useId();
+  const magicNotice = magicLinkExpired
+    ? "That WhatsApp link has expired or was already used. Request a new secure link to continue."
+    : magicLinkInvalid
+      ? "That WhatsApp link is not valid. Request a new secure link to continue."
+      : null;
 
   return (
     <main className="auth-page">
@@ -20,6 +33,12 @@ export function LoginScreen({ sessionExpired = false }: { sessionExpired?: boole
         {sessionExpired ? (
           <p className="session-notice" role="status">
             Your session ended to protect your account. Sign in again to continue.
+          </p>
+        ) : null}
+
+        {magicNotice ? (
+          <p className="session-notice" role="alert">
+            {magicNotice}
           </p>
         ) : null}
 

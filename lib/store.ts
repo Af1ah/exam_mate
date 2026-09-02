@@ -6,6 +6,22 @@ const orm = db.orm.public as any;
 const now = () => new Date().toISOString();
 const INDIA_TIME_ZONE = "Asia/Kolkata";
 
+function toIsoDate(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  if (value instanceof Date) return value.toISOString();
+  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
+  const d = new Date(normalized);
+  return isNaN(d.getTime()) ? "" : d.toISOString();
+}
+
+function parseDate(value: string | Date | null | undefined): Date {
+  if (!value) return new Date(0);
+  if (value instanceof Date) return value;
+  const normalized = value.includes(" ") ? value.replace(" ", "T") : value;
+  const d = new Date(normalized);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
 function indiaQuizDay(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: INDIA_TIME_ZONE,
@@ -66,11 +82,69 @@ async function planDailyQuiz(userId: string) {
   return { quizDay, topic, subject: questions[0]?.subject ?? "Daily practice", questions };
 }
 
+export async function getActiveAttempt(userId: string) {
+  const attempt = await orm.QuizAttempt.where({ userId })
+    .orderBy((a: any) => a.startedAt.desc())
+    .first();
+
+  if (!attempt || attempt.status !== "IN_PROGRESS") return null;
+
+  if (parseDate(attempt.expiresAt) <= new Date()) {
+    await orm.QuizAttempt.where({ id: attempt.id }).update({
+      status: "EXPIRED",
+      updatedAt: now(),
+    });
+    return null;
+  }
+
+  const attemptQuestions = await orm.AttemptQuestion.where({ attemptId: attempt.id })
+    .orderBy((aq: any) => aq.position.asc())
+    .all();
+
+  const questionsWithDetails = await Promise.all(
+    attemptQuestions.map(async (aq: any) => {
+      const q = await orm.Question.first({ id: aq.questionId });
+      return {
+        id: aq.questionId,
+        position: aq.position,
+        content: q?.content ?? "",
+        subject: q?.subject ?? "Daily practice",
+        options: q ? shuffled([...new Set([q.optionA, q.optionB, q.optionC, q.rightAnswer])]) : [],
+        selectedAnswer: aq.selectedAnswer ?? null,
+      };
+    }),
+  );
+
+  const initialAnswers: Record<number, string> = {};
+  for (const q of questionsWithDetails) {
+    if (q.selectedAnswer) {
+      initialAnswers[q.id] = q.selectedAnswer;
+    }
+  }
+
+  return {
+    id: attempt.id,
+    expiresAt: toIsoDate(attempt.expiresAt),
+    quizDay: attempt.quizDay,
+    topic: attempt.topic,
+    subject: questionsWithDetails[0]?.subject ?? "Daily practice",
+    questions: questionsWithDetails.map((q) => ({
+      id: q.id,
+      content: q.content,
+      options: q.options,
+    })),
+    initialAnswers,
+  };
+}
+
 export async function getUserDashboard(userId: string) {
   const quizDay = indiaQuizDay();
   const attempts = await orm.QuizAttempt.where({ userId })
     .orderBy((attempt: any) => attempt.startedAt.desc())
     .all();
+  const activeAttempt = attempts.find(
+    (attempt: any) => attempt.status === "IN_PROGRESS" && parseDate(attempt.expiresAt) > new Date(),
+  );
   const completed = attempts.filter((attempt: any) => attempt.status !== "IN_PROGRESS");
   const scored = completed.filter((attempt: any) => typeof attempt.score === "number" && attempt.total > 0);
   const averageScore = scored.length
@@ -81,7 +155,10 @@ export async function getUserDashboard(userId: string) {
   const bestScore = scored.length
     ? Math.max(...scored.map((attempt: any) => Math.round((attempt.score / attempt.total) * 100)))
     : 0;
-  const todayAttempt = attempts.find((attempt: any) => attempt.quizDay === quizDay);
+  const todayAttempt = attempts.find(
+    (attempt: any) => attempt.quizDay === quizDay || attempt.quizDay.startsWith(`${quizDay}:`),
+  );
+  const completedToday = Boolean(todayAttempt && todayAttempt.status !== "IN_PROGRESS");
   let nextQuiz: { subject: string; topic: string } | null = null;
   if (!todayAttempt || unlimitedAttemptsEnabled()) {
     try {
@@ -93,6 +170,8 @@ export async function getUserDashboard(userId: string) {
   }
   return {
     attemptedToday: Boolean(todayAttempt),
+    completedToday,
+    hasActiveAttempt: Boolean(activeAttempt),
     canStartAnother: unlimitedAttemptsEnabled(),
     nextQuiz,
     summary: { attempts: completed.length, averageScore, bestScore },
@@ -110,9 +189,18 @@ export async function getUserDashboard(userId: string) {
 }
 
 export async function startAttempt(userId: string) {
+  const active = await getActiveAttempt(userId);
+  if (active) return active;
+
   const unlimitedAttempts = unlimitedAttemptsEnabled();
   const quizDay = indiaQuizDay();
-  if (!unlimitedAttempts && (await orm.QuizAttempt.where({ userId, quizDay }).first())) {
+  const existingToday = await orm.QuizAttempt.where({ userId })
+    .orderBy((attempt: any) => attempt.startedAt.desc())
+    .all();
+  const usedToday = existingToday.some(
+    (attempt: any) => attempt.quizDay === quizDay || (!unlimitedAttempts && attempt.quizDay.startsWith(`${quizDay}:`)),
+  );
+  if (!unlimitedAttempts && usedToday) {
     throw new Error("You have already used today’s quiz attempt. Come back tomorrow for a new topic.");
   }
   const { topic, subject, questions } = await planDailyQuiz(userId);
@@ -146,7 +234,7 @@ export async function startAttempt(userId: string) {
   );
   return {
     id,
-    expiresAt,
+    expiresAt: toIsoDate(expiresAt),
     quizDay,
     topic,
     subject,
@@ -160,7 +248,7 @@ export async function startAttempt(userId: string) {
 
 export async function saveAnswer(userId: string, attemptId: string, questionId: number, selectedAnswer: string | null) {
   const attempt = await orm.QuizAttempt.where({ id: attemptId }).where({ userId }).first();
-  if (!attempt || attempt.status !== "IN_PROGRESS" || new Date(attempt.expiresAt) <= new Date())
+  if (!attempt || attempt.status !== "IN_PROGRESS" || parseDate(attempt.expiresAt) <= new Date())
     throw new Error("Quiz is no longer active");
   await orm.AttemptQuestion.where({ attemptId }).where({ questionId }).update({ selectedAnswer, updatedAt: now() });
 }
@@ -178,7 +266,7 @@ export async function submitAttempt(userId: string, attemptId: string) {
     await orm.AttemptQuestion.where({ id: answer.id }).update({ isCorrect: correct, updatedAt: now() });
   }
   await orm.QuizAttempt.where({ id: attemptId }).update({
-    status: new Date(attempt.expiresAt) <= new Date() ? "EXPIRED" : "SUBMITTED",
+    status: parseDate(attempt.expiresAt) <= new Date() ? "EXPIRED" : "SUBMITTED",
     score,
     submittedAt: now(),
     updatedAt: now(),
