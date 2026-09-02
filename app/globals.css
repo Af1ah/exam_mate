@@ -719,8 +719,8 @@ input:focus-visible {
 }
 .completion-action .button {
   width: 100%;
-  padding: 0.75rem 1.25rem;
-  font-size: 0.92rem;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.95rem;
   background: #fff;
   color: #172b5d;
   border: 1px solid #cbd7f2;

@@ -31,6 +31,11 @@ def main() -> None:
     release = f"release-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%S%fZ}"
     ssh_opts = (
         "-o", "BatchMode=yes",
+        # Docker builds can be quiet for several minutes. Keep the SSH transport
+        # active so CI does not lose an otherwise healthy remote deployment.
+        "-o", "ServerAliveInterval=30",
+        "-o", "ServerAliveCountMax=20",
+        "-o", "TCPKeepAlive=yes",
         "-o", "StrictHostKeyChecking=no",
         "-o", "UserKnownHostsFile=/dev/null",
     )
