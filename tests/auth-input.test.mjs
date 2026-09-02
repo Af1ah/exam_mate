@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
 import { normalizeEmail, normalizePhone, readDate, readPassword, readRequiredText } from "../lib/auth/input.ts";
 import { requireSameOrigin, requestIp } from "../lib/auth/request.ts";
 
@@ -49,5 +50,15 @@ describe("request boundaries", () => {
       headers: { "x-real-ip": "203.0.113.10", "x-forwarded-for": "203.0.113.10, 127.0.0.1" },
     });
     expect(requestIp(request)).toBe("203.0.113.10");
+  });
+});
+
+describe("magic-link entry", () => {
+  test("requires a user action before redeeming a one-time token", async () => {
+    const page = await readFile(new URL("../app/q/[token]/page.tsx", import.meta.url), "utf8");
+
+    expect(page).toContain('method="POST"');
+    expect(page).not.toContain("dangerouslySetInnerHTML");
+    expect(page).not.toContain(".submit()");
   });
 });
