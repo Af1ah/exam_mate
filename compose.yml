@@ -31,7 +31,21 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8096:8096"
+      # Only the host Nginx proxy should reach the application directly.
+      - "127.0.0.1:8096:8096"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://exam_user:${POSTGRES_PASSWORD}@db:5432/exam_mate
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["./docker/migrate.sh"]
 
   seed:
     image: postgres:18-bookworm

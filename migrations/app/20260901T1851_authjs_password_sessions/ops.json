@@ -1,0 +1,290 @@
+[
+  {
+    "id": "table.authRateLimit",
+    "label": "Create table \"authRateLimit\"",
+    "summary": "Creates table \"authRateLimit\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "authRateLimit"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"authRateLimit\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"authRateLimit\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"authRateLimit\"",
+        "sql": "CREATE TABLE \"public\".\"authRateLimit\" (\n  \"action\" text NOT NULL,\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"blockedUntil\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"keyHash\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"windowStartedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"authRateLimit\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"authRateLimit\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.email",
+    "label": "Add column \"email\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "email",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"email\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "email"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"email\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"email\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"email\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "email"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.passwordHash",
+    "label": "Add column \"passwordHash\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "passwordHash",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"passwordHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "passwordHash"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"passwordHash\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"passwordHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"passwordHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "passwordHash"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.sessionVersion",
+    "label": "Add column \"sessionVersion\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sessionVersion",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sessionVersion\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "sessionVersion"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sessionVersion\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"sessionVersion\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sessionVersion\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "sessionVersion"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.authRateLimit.authRateLimit_action_keyHash_key",
+    "label": "Add unique constraint on \"authRateLimit\" (action, keyHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "authRateLimit_action_keyHash_key",
+        "table": "authRateLimit"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"authRateLimit_action_keyHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "authRateLimit_action_keyHash_key",
+          "public",
+          "\"public\".\"authRateLimit\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"authRateLimit_action_keyHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"authRateLimit\" ADD CONSTRAINT \"authRateLimit_action_keyHash_key\" UNIQUE (\"action\", \"keyHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"authRateLimit_action_keyHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "authRateLimit_action_keyHash_key",
+          "public",
+          "\"public\".\"authRateLimit\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_email_key",
+    "label": "Add unique constraint on \"user\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_email_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.authRateLimit.authRateLimit_blockedUntil_idx_9ec5475b",
+    "label": "Create index \"authRateLimit_blockedUntil_idx_9ec5475b\" on \"authRateLimit\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "authRateLimit_blockedUntil_idx_9ec5475b",
+        "table": "authRateLimit"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"authRateLimit_blockedUntil_idx_9ec5475b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"authRateLimit_blockedUntil_idx_9ec5475b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"authRateLimit_blockedUntil_idx_9ec5475b\"",
+        "sql": "CREATE INDEX \"authRateLimit_blockedUntil_idx_9ec5475b\" ON \"public\".\"authRateLimit\" (\"blockedUntil\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"authRateLimit_blockedUntil_idx_9ec5475b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"authRateLimit_blockedUntil_idx_9ec5475b\""
+        ]
+      }
+    ]
+  }
+]

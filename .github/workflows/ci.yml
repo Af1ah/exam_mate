@@ -16,6 +16,12 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
+      - name: Reject leaked production server details
+        run: node scripts/check-public-config.mjs
+      - name: Verify migration graph integrity
+        run: bunx prisma migration check --json
+      - name: Reject unsafe migration operations
+        run: node scripts/check-migration-safety.mjs
       - run: bunx tsc --noEmit
       - run: bun run lint
       - run: bun run build

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { db } from "@/prisma/db";
-import { newId } from "@/lib/auth";
+import { newId } from "@/lib/auth/crypto";
 
 const orm = db.orm.public as any;
 const now = () => new Date().toISOString();
@@ -26,41 +26,11 @@ function shuffled<T>(values: T[]) {
   return result;
 }
 
-export async function findOrCreateUser(phone: string) {
-  const existing = await orm.User.where({ phone }).first();
-  return existing ?? orm.User.create({ id: newId(), phone, createdAt: now(), updatedAt: now() });
-}
-
 export async function saveProfile(userId: string, profile: { name: string; dateOfBirth: string; examGoal: string }) {
   return orm.User.where({ id: userId }).update({ ...profile, onboardingStep: 2, updatedAt: now() });
 }
 
-export async function createMagicLink(userId: string, secretHash: string) {
-  const id = newId();
-  await orm.MagicLink.create({
-    id,
-    userId,
-    secretHash,
-    expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
-    createdAt: now(),
-  });
-  return id;
-}
-
-export async function redeemMagicLink(id: string) {
-  return orm.MagicLink.first({ id });
-}
-
-export async function consumeMagicLink(id: string) {
-  await orm.MagicLink.where({ id }).update({ usedAt: now() });
-}
-
-export async function getUser(userId: string) {
-  return orm.User.first({ id: userId });
-}
-
-const unlimitedAttemptsEnabled = () =>
-  process.env.NODE_ENV === "development" || process.env.ALLOW_UNLIMITED_ATTEMPTS === "true";
+const unlimitedAttemptsEnabled = () => process.env.NODE_ENV === "development";
 
 async function planDailyQuiz(userId: string) {
   const quizDay = indiaQuizDay();

@@ -39,15 +39,6 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
     <main className="dashboard">
       <section className="dashboard-hero">
         <h1>Today’s set is complete.</h1>
-        <p className="dashboard-message">
-          {getEncouragement(`${dashboard.summary.attempts}-${dashboard.activity.at(-1)?.day ?? "start"}`)}
-        </p>
-        <p>Review your progress now, then return tomorrow for a new topic.</p>
-        {dashboard.canStartAnother && (
-          <Link className="button button-secondary" href="/quiz?newAttempt=1">
-            Start another test attempt
-          </Link>
-        )}
       </section>
       <section className="dashboard-stats" aria-label="Quiz summary">
         <article>
@@ -65,6 +56,17 @@ export function DashboardScreen({ dashboard }: { dashboard: DashboardData }) {
           <strong>{dashboard.summary.bestScore}%</strong>
           <small>your strongest result</small>
         </article>
+      </section>
+      <section className="dashboard-banner" aria-label="Study reminder">
+        <p className="dashboard-message">
+          {getEncouragement(`${dashboard.summary.attempts}-${dashboard.activity.at(-1)?.day ?? "start"}`)}
+        </p>
+        <p>Review your progress now, then return tomorrow for a new topic.</p>
+        {dashboard.canStartAnother && (
+          <Link className="button button-secondary" href="/quiz?newAttempt=1">
+            Start another test attempt
+          </Link>
+        )}
       </section>
       <section className="dashboard-grid">
         <article className="card chart-card">

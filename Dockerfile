@@ -27,8 +27,10 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/migrations ./migrations
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
+COPY --from=build /app/scripts/check-migration-safety.mjs ./scripts/check-migration-safety.mjs
 COPY --from=build /app/docker/entrypoint.sh ./docker/entrypoint.sh
+COPY --from=build /app/docker/migrate.sh ./docker/migrate.sh
 
-RUN chmod 0555 ./docker/entrypoint.sh
+RUN chmod 0555 ./docker/entrypoint.sh ./docker/migrate.sh
 EXPOSE 8096
 ENTRYPOINT ["./docker/entrypoint.sh"]

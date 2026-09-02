@@ -8,6 +8,10 @@
       "model": "AttemptQuestion",
       "namespace": "public"
     },
+    "authRateLimit": {
+      "model": "AuthRateLimit",
+      "namespace": "public"
+    },
     "magicLink": {
       "model": "MagicLink",
       "namespace": "public"
@@ -149,6 +153,97 @@
               },
               "namespaceId": "public",
               "table": "attemptQuestion"
+            }
+          },
+          "AuthRateLimit": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "attempts": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "blockedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "keyHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "windowStartedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "attempts": {
+                  "column": "attempts"
+                },
+                "blockedUntil": {
+                  "column": "blockedUntil"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "keyHash": {
+                  "column": "keyHash"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "windowStartedAt": {
+                  "column": "windowStartedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "authRateLimit"
             }
           },
           "MagicLink": {
@@ -613,6 +708,13 @@
                   "kind": "scalar"
                 }
               },
+              "email": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "examGoal": {
                 "nullable": true,
                 "type": {
@@ -641,10 +743,24 @@
                   "kind": "scalar"
                 }
               },
+              "passwordHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "phone": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sessionVersion": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -696,6 +812,9 @@
                 "dateOfBirth": {
                   "column": "dateOfBirth"
                 },
+                "email": {
+                  "column": "email"
+                },
                 "examGoal": {
                   "column": "examGoal"
                 },
@@ -708,8 +827,14 @@
                 "onboardingStep": {
                   "column": "onboardingStep"
                 },
+                "passwordHash": {
+                  "column": "passwordHash"
+                },
                 "phone": {
                   "column": "phone"
+                },
+                "sessionVersion": {
+                  "column": "sessionVersion"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -843,6 +968,82 @@
                   "columns": [
                     "attemptId",
                     "position"
+                  ]
+                }
+              ]
+            },
+            "authRateLimit": {
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "attempts": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "blockedUntil": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "keyHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "windowStartedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "blockedUntil"
+                  ],
+                  "name": "authRateLimit_blockedUntil_idx_9ec5475b",
+                  "prefix": "authRateLimit_blockedUntil_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "action",
+                    "keyHash"
                   ]
                 }
               ]
@@ -1219,6 +1420,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "examGoal": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1243,9 +1449,23 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "passwordHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "phone": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "sessionVersion": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
                   "nullable": false
                 },
                 "updatedAt": {
@@ -1266,6 +1486,11 @@
                   "columns": [
                     "phone"
                   ]
+                },
+                {
+                  "columns": [
+                    "email"
+                  ]
                 }
               ]
             }
@@ -1275,10 +1500,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "26a9ef1e951c2a7ac931c4f001eb1928d0b6fd1b4996825dc68e0a71af068795"
+    "storageHash": "90700e6ad43be14428dc85b6e4d97a045a59ebf2b75d1d80f4f9345548671704"
   },
   "execution": {
-    "executionHash": "7e2df513f7d453647efe8bc47ba7ea5a855a35217f035f3c1db3f973920d7872",
+    "executionHash": "f66eba0e1082787a104e5e3332f293c55ed85f83439c5127dd1bfbc5c43bdc2d",
     "mutations": {
       "defaults": [
         {
@@ -1294,6 +1519,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "attemptQuestion"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "authRateLimit"
           }
         },
         {

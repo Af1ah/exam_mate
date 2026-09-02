@@ -34,4 +34,8 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: python3 scripts/deploy.py --host "$DEPLOY_HOST" --user "${DEPLOY_USER:-root}" --identity-file ~/.ssh/exam-mate --remote-dir "${DEPLOY_PATH:-/root/projects/exam-mate}"
+        run: |
+          : "${DEPLOY_HOST:?Set the DEPLOY_HOST repository secret}"
+          : "${DEPLOY_USER:?Set the DEPLOY_USER repository secret}"
+          : "${DEPLOY_PATH:?Set the DEPLOY_PATH repository secret}"
+          python3 scripts/deploy.py --host "$DEPLOY_HOST" --user "$DEPLOY_USER" --identity-file ~/.ssh/exam-mate --remote-dir "$DEPLOY_PATH"

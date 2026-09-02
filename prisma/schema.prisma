@@ -28,6 +28,9 @@ model Question {
 model User {
   id             String @id
   phone          String @unique
+  email          String? @unique
+  passwordHash   String?
+  sessionVersion Int    @default(1)
   name           String?
   dateOfBirth    String?
   examGoal       String?
@@ -37,6 +40,20 @@ model User {
 
   magicLinks MagicLink[]
   attempts   QuizAttempt[]
+}
+
+model AuthRateLimit {
+  id              String @id
+  action          String
+  keyHash         String
+  attempts        Int    @default(0)
+  windowStartedAt TimestamptzString
+  blockedUntil    TimestamptzString?
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@unique([action, keyHash])
+  @@index([blockedUntil])
 }
 
 model MagicLink {

@@ -21,6 +21,11 @@ export function ResultScreen({ result }: { result: ResultData }) {
         </p>
         <p>{getEncouragement(`${result.score}-${result.total}`)}</p>
         <p>Review each answer and carry one useful lesson into tomorrow’s attempt.</p>
+        <div className="result-actions">
+          <Link className="button" href="/dashboard">
+            View my dashboard
+          </Link>
+        </div>
       </section>
       <section className="review-list" aria-label="Answer review">
         {result.review.map((answer) => (
@@ -52,3 +57,4 @@ export function ResultScreen({ result }: { result: ResultData }) {
   );
 }
 import { getEncouragement } from "@/lib/encouragement";
+import Link from "next/link";

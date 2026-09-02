@@ -22,9 +22,9 @@ def run(*args: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", required=True)
-    parser.add_argument("--user", default="root")
+    parser.add_argument("--user", required=True)
     parser.add_argument("--identity-file", required=True)
-    parser.add_argument("--remote-dir", default="/root/projects/exam-mate")
+    parser.add_argument("--remote-dir", required=True)
     args = parser.parse_args()
 
     root = pathlib.Path(__file__).resolve().parents[1]
@@ -57,7 +57,10 @@ def main() -> None:
         f"rm -f {shlex.quote(remote_archive)}; "
         f"cp {shlex.quote(f'{args.remote_dir}/.env')} {shlex.quote(f'{remote_release}/.env')}; "
         f"cd {shlex.quote(remote_release)}; "
-        "docker compose --project-name exam-mate up -d --build --remove-orphans"
+        "docker compose --project-name exam-mate build app migrate; "
+        "docker compose --project-name exam-mate up -d db; "
+        "docker compose --project-name exam-mate run --rm --no-deps migrate; "
+        "docker compose --project-name exam-mate up -d --remove-orphans db app"
     )
     remote = (
         "set -eu; "

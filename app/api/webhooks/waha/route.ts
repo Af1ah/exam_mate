@@ -1,6 +1,9 @@
 import { after, NextResponse } from "next/server";
-import { createMagicLink, findOrCreateUser } from "@/lib/store";
-import { hashSecret, newMagicSecret, validWahaSignature } from "@/lib/auth";
+import { hashSecret, newMagicSecret, validWahaSignature } from "@/lib/auth/crypto";
+import { normalizePhone } from "@/lib/auth/input";
+import { consumeRateLimit } from "@/lib/auth/rate-limit";
+import { getPublicOrigin } from "@/lib/config/server";
+import { createMagicLink, findOrCreateUser } from "@/lib/data/auth";
 import { clearWhatsAppPresence, sendWhatsApp } from "@/lib/waha";
 
 export const runtime = "nodejs";
@@ -20,14 +23,22 @@ export async function POST(request: Request) {
   const payload = event?.payload;
   if (event?.event !== "message" || payload?.fromMe || payload?.hasMedia || !payload?.body || !payload?.from)
     return NextResponse.json({ ok: true });
-  const user = await findOrCreateUser(payload.from.replace(/@(c\.us|lid)$/, ""));
+  const phone = normalizePhone(payload.from.replace(/@(c\.us|lid)$/, ""));
+  if (!phone) return NextResponse.json({ ok: true });
+  const user = await findOrCreateUser(phone);
   if (payload.body.trim().toLowerCase() !== "start") {
     await reply(payload.from, 'Welcome to Exam Mate. Type "start" to receive today’s private 10-question quiz link.');
     return NextResponse.json({ ok: true });
   }
+  try {
+    await consumeRateLimit("magic-request", payload.from);
+  } catch {
+    await reply(payload.from, "Too many link requests. Please wait before trying again.");
+    return NextResponse.json({ ok: true });
+  }
+  const publicOrigin = getPublicOrigin();
   const secret = newMagicSecret();
   const linkId = await createMagicLink(user.id, await hashSecret(secret));
-  const publicOrigin = process.env.QUIZ_PUBLIC_URL ?? new URL(request.url).origin;
   await reply(
     payload.from,
     `Today’s private quiz link: ${publicOrigin}/q/${linkId}.${secret}\n\nThis link expires in 15 minutes. If it expires, send START again. You get one quiz attempt each day.`,

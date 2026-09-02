@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AUTH_POLICY } from "@/lib/auth/constants";
 type Quiz = {
   id: string;
   expiresAt: string;
@@ -16,7 +17,7 @@ export function QuizApp({
   nextQuiz: { subject: string; topic: string } | null;
 }) {
   const router = useRouter();
-  const [profile, setProfile] = useState({ name: "", dateOfBirth: "", examGoal: "" });
+  const [profile, setProfile] = useState({ name: "", dateOfBirth: "", examGoal: "", email: "", password: "" });
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [position, setPosition] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -94,6 +95,7 @@ export function QuizApp({
               Your name
               <input
                 autoComplete="name"
+                maxLength={80}
                 name="name"
                 required
                 placeholder="e.g. Aflah"
@@ -116,12 +118,41 @@ export function QuizApp({
               Exam you are preparing for
               <input
                 autoComplete="off"
+                maxLength={120}
                 name="examGoal"
                 required
                 placeholder="e.g. SSC CGL"
                 value={profile.examGoal}
                 onChange={(event) => setProfile({ ...profile, examGoal: event.target.value })}
               />
+            </label>
+            <label>
+              Email for password sign-in
+              <input
+                autoComplete="email"
+                maxLength={254}
+                name="email"
+                required
+                type="email"
+                value={profile.email}
+                onChange={(event) => setProfile({ ...profile, email: event.target.value })}
+              />
+            </label>
+            <label>
+              Create a password
+              <input
+                autoComplete="new-password"
+                minLength={AUTH_POLICY.passwordMinLength}
+                maxLength={AUTH_POLICY.passwordMaxLength}
+                name="password"
+                required
+                type="password"
+                value={profile.password}
+                onChange={(event) => setProfile({ ...profile, password: event.target.value })}
+              />
+              <span className="field-hint">
+                Use {AUTH_POLICY.passwordMinLength}–{AUTH_POLICY.passwordMaxLength} characters.
+              </span>
             </label>
             <button className="button" disabled={busy}>
               {busy ? "Saving profile…" : "Start my 10-minute quiz"}
